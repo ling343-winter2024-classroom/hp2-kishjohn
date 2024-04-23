@@ -94,18 +94,21 @@ sing GitHub and pushing changes
 
 #previous example code from other hw - in progress
 # write_rds(top_dogs_urls, "top_dogs_urls.rds")
-top_dogs_urls <- read_rds("top_dogs_urls.rds")
-here::i_am("analysis/Kish_HW5.qmd")
+# top_dogs_urls <- read_rds("top_dogs_urls.rds")
+
+here::i_am("hp2-kishjohn/analysis")
 library(here)
 
-data <- read.csv(here("data/delong maze 40Ss.csv"), 
-              header = 1, sep = ",", comment.char = "#", strip.white = T,
-              col.names = c("Index","Time","Counter","Hash","Owner","Controller","Item","Element","Type","Group","FieldName","Value","WordNum","Word","Alt","WordOn","CorrWord","RT","Sent","TotalTime","Question","Resp","Acc","RespRT"));
+# write_csv(data2, "Employee_Salaries.csv")
+data <- read.csv(here("data/Employee_Salaries.csv")
+                 
+# data_removed_part <- filter(data, Hash != '9dAvrH0+R6a0U5adPzZSyA')
 
-data_removed_part <- filter(data, Hash != '9dAvrH0+R6a0U5adPzZSyA')
+getwd()
 
+```
 
-
+```{r}
 
 ```
 
