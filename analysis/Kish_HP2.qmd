@@ -1,0 +1,111 @@
+---
+title: "Kish_HP2"
+author: "John Kish"
+format:
+  html:
+    embed-resources: true
+---
+
+```{r setup}
+
+library(tidyverse)
+library(here)
+
+
+```
+
+
+## Question 1
+
+
+
+## Question 2
+
+
+
+## Question 3
+
+
+
+## Question 4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ You should ask/answer at least 4 significant questions in your analysis.
+ 
+ By significant, I mean something meaningful about the data (not just randomly counting rows for no reason), and something that takes more than a couple of lines of code. 
+ 
+ 
+ 
+ clear explanation of the questions you are exploring in introductory text
+ 
+ 
+ 
+clear description of the datasets, similar to a data dictionary/codebook, but you don't need to describe variables you aren't using at all 
+ 
+ 
+effective use of summaries, tables, and visualizations to address your questions, with explanations that refer to the key aspects of them
+ 
+ 
+ 
+ not required, but very effective to use inline R code to refer to variables in the markdown text
+ 
+ 
+working with files and projects
+importing data
+
+data cleaning and tidying rename variables, check for and resolve missing/malformed data as appropriate, set variable types
+
+general data wrangling filtering/subsetting data, pivoting, joins - as needed
+
+mutating, grouping, and summarizing
+
+working with non-rectangular text data
+
+explanation of variables inclusion of codebook/data dictionary and clear explanation of variables used in analysis, in the context of the chosen dataset
+
+writing a quality data analysis report including text explanation of analysis, clear statement of questions and how answers are reported/visualized
+
+targetted plots (at least 4) well-explained and contextualized in report, with appropriate labels and colors
+
+sing GitHub and pushing changes
+
+
+```{r}
+
+
+#previous example code from other hw - in progress
+# write_rds(top_dogs_urls, "top_dogs_urls.rds")
+top_dogs_urls <- read_rds("top_dogs_urls.rds")
+here::i_am("analysis/Kish_HW5.qmd")
+library(here)
+
+data <- read.csv(here("data/delong maze 40Ss.csv"), 
+              header = 1, sep = ",", comment.char = "#", strip.white = T,
+              col.names = c("Index","Time","Counter","Hash","Owner","Controller","Item","Element","Type","Group","FieldName","Value","WordNum","Word","Alt","WordOn","CorrWord","RT","Sent","TotalTime","Question","Resp","Acc","RespRT"));
+
+data_removed_part <- filter(data, Hash != '9dAvrH0+R6a0U5adPzZSyA')
+
+
+
+
+```
+
