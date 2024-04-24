@@ -11,32 +11,30 @@ format:
 library(tidyverse)
 library(here)
 
-
+view(df)
 ```
 
+employees of Montgomery County, MD paid in calendar year 2023
 
-## Question 1
-
-
-
-## Question 2
+## Question 1 Gender
 
 
 
-## Question 3
+## Question 2 Total Compensation and Overtime
 
 
 
-## Question 4
+## Question 3 Department and Salary
 
 
 
+## Question 4 Grade (w/ Focus on Management) and Salary
 
 
 
 
 
-
+Some example questions could include "which gender has more overtime?", "how much of their total compensation is that overtime?", and "does this overtime and corresponding percentage of total compensation vary across department or decrease across time (here we only have access to "longevity pay" and not specific amount of years worked).
 
 
 
@@ -44,6 +42,49 @@ library(here)
 
 
 
+
+
+
+```{r codebook}
+
+# Department
+# Abbreivation/accronym for the department name. Example: ABS for the Alcohol Beverage Services department
+
+# Department_Name
+# the department name for all active, permanent employees of Montgomery County, MD (Maryland)
+
+
+# Division
+# The division for each department. That is, a single department can have multiple divisions and focuses.
+# Example: ABS has the divisions that include those of ABS 85 Administrative Services
+# and ABS 85 Beer Delivery Operations
+
+# Gender
+# the Gender of M and F. Assuming that since this is filings with the government, M is to be the legal sex of the individual M for Male and F for Female.
+
+# Base_Salary
+# precise base salaries (including down to the cent) for the individual, at the end of the calendar year.
+# this is projected data. Should be accurate, but projection allows for greater flexibiliity.
+
+
+# Overtime_Pay
+# amount of overtime pay an employee/individual received for working beyond what they were required to do
+
+
+# Longevity_Pay
+# Longevity pay gives additional compensation for qualifying employees who have worked for a good deal of time. The longer time that is worked, the greater the longevity pay. Specifics about how long are dealt with in-house.
+
+
+# Grade
+# the standing an employee has within a company. The internal codes for all positions are not provided, but we can safely look at M1, M2, M3, etc. as those are clearly levels of management.
+
+# M4-Senior Manager
+# M3-Middle Manager
+# M2-Middle Manager
+# M1-First Level Manager
+
+
+```
 
 
 
@@ -89,22 +130,14 @@ targetted plots (at least 4) well-explained and contextualized in report, with a
 sing GitHub and pushing changes
 
 
-```{r}
+```{r import}
 
 
-#previous example code from other hw - in progress
-# write_rds(top_dogs_urls, "top_dogs_urls.rds")
-# top_dogs_urls <- read_rds("top_dogs_urls.rds")
-
-here::i_am("hp2-kishjohn/analysis")
+here::i_am("analysis/Kish_HP2.qmd")
 library(here)
 
-# write_csv(data2, "Employee_Salaries.csv")
-data <- read.csv(here("data/Employee_Salaries.csv")
-                 
-# data_removed_part <- filter(data, Hash != '9dAvrH0+R6a0U5adPzZSyA')
+df <- read.csv(here("data/Employee_Salaries.csv"))
 
-getwd()
 
 ```
 
