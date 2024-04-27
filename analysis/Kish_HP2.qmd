@@ -267,7 +267,9 @@ ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
     labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Employees") +
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm") +
+  theme(legend.position="none")+ 
+  theme(plot.title = element_text(size=10))
 p
 
 
@@ -277,7 +279,7 @@ The slope coefficient (intercept and then slope) is `r Base_Total_lm$coefficient
 
 ```{r}
 #| code-fold: TRUE
-#| code-summary: "Respective Percentage Total Compensation"
+#| code-summary: "Preliminary Analysis Plots"
 #| warning: FALSE
 
 
@@ -287,7 +289,9 @@ ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
     labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Those with Overtime Pay") +
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm") +
+    theme(legend.position="none")+ 
+  theme(plot.title = element_text(size=10))
 p2
 ```
 
@@ -295,7 +299,7 @@ The slope coefficient (intercept and then slope) is `r Over_Base_Total_lm$coeffi
 
 ```{r}
 #| code-fold: TRUE
-#| code-summary: "Respective Percentage Total Compensation"
+#| code-summary: "Preliminary Analysis Plots"
 #| warning: FALSE
 
 
@@ -305,14 +309,16 @@ ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
     labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Those with Longevity Pay") +
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm") +
+    theme(legend.position="none")+ 
+  theme(plot.title = element_text(size=10))
 p3
 ```
 The slope coefficient (intercept and then slope) is `r Long_Base_Total_lm$coefficients`.
 
 ```{r}
 #| code-fold: TRUE
-#| code-summary: "Respective Percentage Total Compensation"
+#| code-summary: "Preliminary Analysis Plots"
 #| warning: FALSE
 
 
@@ -321,8 +327,10 @@ ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Those with Overtime or longevity pay") +
-  geom_smooth(method = "lm")
+    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Those with Overtime or Longevity Pay") +
+  geom_smooth(method = "lm") +
+    theme(legend.position="none")+ 
+  theme(plot.title = element_text(size=10))
 p4
 
 ```
@@ -330,7 +338,7 @@ p4
 The slope coefficient (intercept and then slope) is `r Over_Long_Base_Total_lm$coefficients`.
 ```{r}
 #| code-fold: TRUE
-#| code-summary: "Respective Percentage Total Compensation"
+#| code-summary: "Preliminary Analysis Plots"
 #| warning: FALSE
 
 
@@ -339,8 +347,10 @@ ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All those with additional compensation") +
-  geom_smooth(method = "lm")
+    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Those with Additional Compensation") +
+  geom_smooth(method = "lm")+
+    theme(legend.position="none")+ 
+  theme(plot.title = element_text(size=10))
 p5
 
 ```
@@ -352,7 +362,7 @@ The slope coefficient (intercept and then slope) is `r Add_Comp_Base_Total_lm$co
 #### How much of their total compensation is base + overtime, longevity, either, or both (In terms of percentage?)
 ```{r}
 #| code-fold: TRUE
-#| code-summary: "Respective Percentage Total Compensation"
+#| code-summary: "Preliminary Analyis Percentage"
 #| warning: FALSE
 
 # addiing to the original df a new column, using mutate, that is the percent of total
@@ -385,7 +395,7 @@ df$Percent_Over_Long <- round(df$Percent_Over_Long, 3) * 100
 
 ```{r}
 #| code-fold: TRUE
-#| code-summary: "Preliminary Analysis Plots"
+#| code-summary: "Preliminary Analysis Percentage Coefficients"
 #| warning: FALSE
 
 
@@ -415,7 +425,7 @@ Interestingly, the more percentage base pay you have, the less your total compen
 #### Plots
 ```{r plots}
 #| code-fold: TRUE
-#| code-summary: "Preliminary Analysis Plots"
+#| code-summary: "Preliminary Analysis Percentage Plots"
 #| warning: FALSE
 
 
@@ -425,8 +435,10 @@ p6 <- df |>
 ggplot(mapping = aes(x = Percent_Base, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Percent Base", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All those with additional compensation") +
-  geom_smooth(method = "lm")
+    labs(x = "Percent Base", y = "Total Compensation", title = "Percent Base Salary, Total Compensation for All Employees") +
+  geom_smooth(method = "lm") +
+    theme(legend.position="none")+ 
+  theme(plot.title = element_text(size=10))
 p6
 
 
@@ -436,7 +448,7 @@ The slope coefficient (intercept and then slope) is `r Percent_Base_Total_lm$coe
 
 ```{r}
 #| code-fold: TRUE
-#| code-summary: "Preliminary Analysis Plots"
+#| code-summary: "Preliminary Analysis Percentage Plots"
 #| warning: FALSE
 
 
@@ -445,9 +457,12 @@ p10 <- df |>
 ggplot(mapping = aes(x = Percent_Over, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Percent Add Comp", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All those with additional compensation") +
+    labs(x = "Percent Add Comp", y = "Total Compensation", title = "Percent Overtime, Total Compensation for All Employees") +
   geom_smooth(method = "lm") +
-  facet_wrap(~Sex)
+  facet_wrap(~Sex) + 
+  theme(legend.position="none") +
+    theme(legend.position="none")+ 
+  theme(plot.title = element_text(size=10))
 p10
 
 ```
@@ -458,7 +473,7 @@ The slope coefficient (intercept and then slope) is `r Percent_Over_Total_lm$coe
 
 ```{r}
 #| code-fold: TRUE
-#| code-summary: "Preliminary Analysis Plots"
+#| code-summary: "Preliminary Analysis Percentage Plots"
 #| warning: FALSE
 
 
@@ -467,15 +482,17 @@ p7 <- df |>
 ggplot(mapping = aes(x = Percent_Long, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Percent Long", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All those with additional compensation") +
-  geom_smooth(method = "lm")
+    labs(x = "Percent Long", y = "Total Compensation", title = "Percent Longevity Pay, Total Compensation for All Employees") +
+  geom_smooth(method = "lm") +
+    theme(legend.position="none")+ 
+  theme(plot.title = element_text(size=10))
 p7
 ```
 The slope coefficient (intercept and then slope) is `r Percent_Long_Total_lm$coefficients`.
 
 ```{r}
 #| code-fold: TRUE
-#| code-summary: "Preliminary Analysis Plots"
+#| code-summary: "Preliminary Analysis Percentage Plots"
 #| warning: FALSE
 
 p8 <- df |>
@@ -483,15 +500,17 @@ p8 <- df |>
 ggplot(mapping = aes(x = Percent_Over_Long, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Percent Over Long", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All those with additional compensation") +
-  geom_smooth(method = "lm")
+    labs(x = "Percent Over Long", y = "Total Compensation", title = "Percent Either Overtime or Longevity Pay, Total Compensation for All Employees") +
+  geom_smooth(method = "lm") +
+    theme(legend.position="none")+ 
+  theme(plot.title = element_text(size=10))
 p8
 ```
 
 The slope coefficient (intercept and then slope) is `r Percent_Over_Long_Total_lm$coefficients`.
 ```{r}
 #| code-fold: TRUE
-#| code-summary: "Preliminary Analysis Plots"
+#| code-summary: "Preliminary Analysis Percentage Plots"
 #| warning: FALSE
 
 p9 <- df |>
@@ -499,9 +518,11 @@ p9 <- df |>
 ggplot(mapping = aes(x = Percent_Add_Comp, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Percent Add Comp", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All those with additional compensation") +
+    labs(x = "Percent Add Comp", y = "Total Compensation", title = "Percent Additional Compensation, Total Compensation for All Employees") +
   geom_smooth(method = "lm") +
-  facet_wrap(~Sex)
+  facet_wrap(~Sex) +
+    theme(legend.position="none") + 
+  theme(plot.title = element_text(size=10))
 p9
 
 ```
@@ -639,9 +660,11 @@ ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Employees") +
+    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Employees, by Gender") +
   geom_smooth(method = "lm") +
-  facet_wrap(~Sex)
+  facet_wrap(~Sex)+
+    theme(legend.position="none") + 
+  theme(plot.title = element_text(size=10))
 p1
 
 ```
@@ -659,9 +682,11 @@ ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Those with Overtime Pay") +
+    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for Those with Overtime, by Gender") +
   geom_smooth(method = "lm") +
-  facet_wrap(~Sex)
+  facet_wrap(~Sex) +
+    theme(legend.position="none") + 
+  theme(plot.title = element_text(size=10))
 p2
 ```
 
@@ -678,9 +703,11 @@ ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Those with Longevity Pay") +
+    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for Those with Longevity Pay, by Gender") +
   geom_smooth(method = "lm") +
-  facet_wrap(~Sex)
+  facet_wrap(~Sex) +
+    theme(legend.position="none") + 
+  theme(plot.title = element_text(size=10))
 p3
 ```
 
@@ -699,9 +726,11 @@ ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Those with Overtime or longevity pay") +
+    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for Those with Overtime or Longevity, by Gender") +
   geom_smooth(method = "lm") +
-  facet_wrap(~Sex)
+  facet_wrap(~Sex) +
+    theme(legend.position="none") + 
+  theme(plot.title = element_text(size=10))
 p4
 
 ```
@@ -719,9 +748,11 @@ ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All those with additional compensation") +
+    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for Those with Additional Compensation, by Gender") +
   geom_smooth(method = "lm") +
-  facet_wrap(~Sex)
+  facet_wrap(~Sex) +
+    theme(legend.position="none") + 
+  theme(plot.title = element_text(size=10))
 p5
 
 ```
@@ -736,25 +767,18 @@ and for females it is `r F_Add_Comp_Base_Total_lm$coefficients`.
 It looks like males are consistently getting higher slopes than their counterparts.
 
 
-```{r}
-
-p6 <- df |>
-  group_by(Employee) |>
-ggplot(mapping = aes(x = Percent_Base, y = Total_Compensation)) +
-  geom_point(aes(color = "red")) +
-  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Percent Base", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All those with additional compensation") +
-  geom_smooth(method = "lm")
-p6
-
-```
-
 
 ## Topic 3 Management
 
-The data provided was not too clear on the types of jobs each employee had. However, I was able to pick out those jobs dealing with management.
+The data provided was not too clear on the types of jobs each employee had.
+
+However, I was able to pick out those jobs dealing with management.
+
 Do these jobs follow the trends we saw earlier? Both in terms of additional compensation scaling and men benefiting from this more?
+
 Due to limitations in the data (the spread of the managerial data does not allow for proper slope analysis) we will be relying on visuals and summaries.
+
+<br>
 
 Management was broken down into categories:
 where 
@@ -815,6 +839,7 @@ In M2, there are `r Row_M_M2_Management_df` males and `r Row_F_M2_Management_df`
 
 In M3, there are `r Row_M_M3_Management_df` males and `r Row_F_M3_Management_df` females.
 
+Looks pretty comparable to me
 
 ### Management Plots
 
@@ -829,9 +854,11 @@ ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Employees") +
+    labs(x = "Base Salary", y = "Total Compensation", title = "Management Base Salary vs. Total Compensatory for All Employees, by Job Grade") +
   geom_smooth(method = "lm") +
-  facet_wrap(~ Grade)
+  facet_wrap(~ Grade) +
+    theme(legend.position="none")  + 
+  theme(plot.title = element_text(size=10))
 p
 
 ```
@@ -849,9 +876,11 @@ ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Employees") +
+    labs(x = "Base Salary", y = "Total Compensation", title = "Management Base Salary vs. Total Compensatory for All Employees, by Gender") +
   geom_smooth(method = "lm") +
-  facet_wrap(~ Sex)
+  facet_wrap(~ Sex) +
+    theme(legend.position="none")  + 
+  theme(plot.title = element_text(size=10))
 p
 
 
@@ -870,9 +899,12 @@ ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Employees") +
+    labs(x = "Base Salary", y = "Total Compensation", title = "Management Base Salary vs. Total Compensatory for All Employees, by Both Job Grade and Gender") +
   geom_smooth(method = "lm") +
-  facet_grid(rows = vars(Grade), cols = vars(Sex))
+  facet_grid(rows = vars(Grade), cols = vars(Sex)) +
+    theme(legend.position="none") + 
+  theme(plot.title = element_text(size=10))
+  
 p2
 
 ```
@@ -995,15 +1027,16 @@ Was our data consistent among all departments? Are one or a few departments poss
 #### Focus: Sex
 ```{r}
 #| code-fold: TRUE
-#| code-summary: "Management Summary"
+#| code-summary: "Department Plots"
 #| warning: FALSE
 
 
 p2 <- df |>
 ggplot(mapping = aes(x = Department, y = Total_Compensation)) +
-  geom_point(aes(color = Sex, shape = Sex, size = Base_Salary)) +
+  geom_point(aes(color = Sex, shape = Sex)) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Employees") 
+    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Employees, by Department and Sex") +
+  theme(plot.title = element_text(size=10))
 p2
 
 
@@ -1017,7 +1050,7 @@ FRS and POL looks male dominated and HHS looksfemale dominated.
 ##### Base Salary
 ```{r}
 #| code-fold: TRUE
-#| code-summary: "Management Summary"
+#| code-summary: "Department Plots"
 #| warning: FALSE
 
 
@@ -1025,7 +1058,7 @@ p2 <- df |>
 ggplot(mapping = aes(x = Department, y = Total_Compensation)) +
   geom_point(aes(color = Percent_Base, size = Sex)) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Employees") 
+    labs(x = "Base Salary", y = "Total Compensation", title = "Percent Base Salary vs. Total Compensatory for All Employees, by Department and Sex") + theme(plot.title = element_text(size= 10))
 p2
 
 ```
@@ -1036,7 +1069,7 @@ COR, FRS, and POL stick out as having higher total compensation, and this compen
 ##### Additional Compensation
 ```{r}
 #| code-fold: TRUE
-#| code-summary: "Management Summary"
+#| code-summary: "Department Plots"
 #| warning: FALSE
 
 
@@ -1044,7 +1077,7 @@ p2 <- df |>
 ggplot(mapping = aes(x = Department, y = Total_Compensation)) +
   geom_point(aes(color = Percent_Add_Comp, size = Sex)) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Employees") 
+    labs(x = "Base Salary", y = "Total Compensation", title = "Percentage Additional Compensation vs. Total Compensatory for All Employees, by Department and Sex") + theme(plot.title = element_text(size=9)) 
 p2
 
 
@@ -1055,28 +1088,30 @@ That is, same as above, you can see COR, FRS, and POL start to have additional c
 #### Focus: Combine them! (Gender & Percent Base Salary)
 ```{r}
 #| code-fold: TRUE
-#| code-summary: "Management Summary"
+#| code-summary: "Department Plots"
 #| warning: FALSE
 
 
 p2 <- df |>
 ggplot(mapping = aes(x = Department, y = Total_Compensation)) +
   geom_point(aes(color = Percent_Base, shape = Sex, size = Base_Salary)) +
+  scale_size_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Employees") 
+    labs(x = "Base Salary", y = "Total Compensation", title = "Percent Base Salary vs. Total Compensatory for All Employees, by Department and Sex") + theme(plot.title = element_text(size=10))
+  
 p2
 
 
 ```
 
 
-Here's an intersting visual showing the same information as the two previous — but here again we still se COR, FRS, and POL sticking out.
+Here's an interesting visual showing the same information as the two previous — but here again we still se COR, FRS, and POL sticking out.
 
 
 Those three lines with lower percent bases and higher total comp are COR FRS and POL.
 ```{r}
 #| code-fold: TRUE
-#| code-summary: "Management Summary"
+#| code-summary: "Department Summary"
 #| warning: FALSE
 #| 
 #	Correction and Rehabilitation
@@ -1102,7 +1137,7 @@ Based on what the three departments are, as shown in the tables above, do you ha
 
 ## Conclusion
 
-We saw evidence that there is a lack of diminishing returns for getting additional compensation
+We saw a lack of evidence for there being diminishing returns for getting additional compensation
 
 Moreover, males tend to experience less diminishing returns than their counterparts.
 
