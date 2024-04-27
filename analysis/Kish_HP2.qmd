@@ -6,6 +6,22 @@ format:
     embed-resources: true
 ---
 
+```{r note}
+#| echo: FALSE
+#| warning: FALSE
+
+# Note to self: didn't work with non=rectangular text data here,
+# but did elsewhere, including Homework 4 +the genius assignment
+
+
+# Used an anti-join here as was appropriate, didn't find a good use for a pivot
+# other joins were just recommended, but used elsewhere projects
+
+# other stuff should be pretty goodish
+
+```
+
+
 ## Import and Setup
 ```{r setup}
 #| code-fold: TRUE
@@ -57,7 +73,8 @@ df <- read.csv(here("data/Employee_Salaries.csv"))
 # and ABS 85 Beer Delivery Operations
 
 # Gender
-# the Gender of M and F. Assuming that since this is filings with the government, M is to be the legal sex of the individual M for Male and F for Female.
+# Sex
+# the Gender of M and F. Assuming that since this is public info, M is to be the legal sex of the individual M for Male and F for Female.
 
 # Base_Salary
 # precise base salaries (including down to the cent) for the individual, at the end of the calendar year.
@@ -106,9 +123,23 @@ Additional detail can be found above in "Explanation of Data Variables" tab.
 <br>
 
 
+## Goal of Analysis
+
 We will begin by exploring the relationship between base pay and total compensation across all employees.
 
 Then, we will look to see how this relationship develops across gender, management, and department.
+
+### Outline of the questions we will be addressing:
+
+
+Topic 1) How do base pay and additional pay relate to total compensation? is taking on a little more additional pay (at least if you can, like overtime) worth it?
+
+Topic 2) Are there any disparities between the genders in light of the previous analysis?
+
+Topic 3) Is management similar to overall jobs? Are Male and Female equally represented here? Is there evidence of a glass-ceiling, or it being harder for one sex to reach higher compensation due to real or imagined contraints?
+
+Topic 4) How do the genders vary by department? Is it oversampling a gender so that we're skewing our analyis?
+
 
 
 ## Preliminary
@@ -147,14 +178,15 @@ Total compensation will be the combination of base pay and additional compensati
 
 In the data, there are `r sum(is.na(df))`  missing values. (Good news!)
 
-Assuming that since this data comes from the public and not the private sphere (and so the data would be collected based on public filings),
+Assuming that since this data comes what is available to verified by the public,
+
 M is assumed to be the legal sex of the individual — M for Male and F for Female. That is, sex as legality rather than gender as identity seems to be what is implied. Occasionally, the term "gender" might be used here as well to refer to "sex".
 
 
 
 
 
-## Topic 1 Total Compensation and Overtime
+## Topic 1: Total Compensation and Overtime
 ### Preliminary Analysis
 
 #### How many employees are there? How many of them get overtime, longevity, either, or both?
@@ -189,12 +221,12 @@ Employees_With_Longevity <- anti_join(df, Employees_Without_Longevity)
 Percent_Longevity <- (nrow(Employees_With_Longevity) / Total_Employees) * 100
 
 
-# Either Over or Long Count % Percentage
+# Either Over or Long Count & Percentage
 Employees_Without_Over_Long <- filter(df, Overtime_Pay == 0.00 | Longevity_Pay == 0.00)
 Employees_With_Over_Long <- anti_join(df, Employees_Without_Over_Long)
 Percent_Over_Long <- (nrow(Employees_With_Over_Long) / Total_Employees) * 100
 
-# Add Comp Count % Percentage
+# Add Comp Count & Percentage
 Employees_Without_Add_Comp <- filter(df, Additional_Compensation == 0.00)
 Employees_With_Add_Comp <- anti_join(df, Employees_Without_Add_Comp)
 Percent_Add_Comp <- (nrow(Employees_With_Add_Comp) / Total_Employees) * 100
@@ -435,7 +467,7 @@ p6 <- df |>
 ggplot(mapping = aes(x = Percent_Base, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Percent Base", y = "Total Compensation", title = "Percent Base Salary, Total Compensation for All Employees") +
+    labs(x = "Percent Base Pay", y = "Total Compensation", title = "Percent Base Salary, Total Compensation for All Employees") +
   geom_smooth(method = "lm") +
     theme(legend.position="none")+ 
   theme(plot.title = element_text(size=10))
@@ -457,9 +489,8 @@ p10 <- df |>
 ggplot(mapping = aes(x = Percent_Over, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Percent Add Comp", y = "Total Compensation", title = "Percent Overtime, Total Compensation for All Employees") +
+    labs(x = "Percent Overtime Pay", y = "Total Compensation", title = "Percent Overtime, Total Compensation for All Employees") +
   geom_smooth(method = "lm") +
-  facet_wrap(~Sex) + 
   theme(legend.position="none") +
     theme(legend.position="none")+ 
   theme(plot.title = element_text(size=10))
@@ -482,7 +513,7 @@ p7 <- df |>
 ggplot(mapping = aes(x = Percent_Long, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Percent Long", y = "Total Compensation", title = "Percent Longevity Pay, Total Compensation for All Employees") +
+    labs(x = "Percent Longevity Pay", y = "Total Compensation", title = "Percent Longevity Pay, Total Compensation for All Employees") +
   geom_smooth(method = "lm") +
     theme(legend.position="none")+ 
   theme(plot.title = element_text(size=10))
@@ -500,7 +531,7 @@ p8 <- df |>
 ggplot(mapping = aes(x = Percent_Over_Long, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Percent Over Long", y = "Total Compensation", title = "Percent Either Overtime or Longevity Pay, Total Compensation for All Employees") +
+    labs(x = "Percent Overtime or Longevity Pay", y = "Total Compensation", title = "Percent Either Overtime or Longevity Pay, Total Compensation for All Employees") +
   geom_smooth(method = "lm") +
     theme(legend.position="none")+ 
   theme(plot.title = element_text(size=10))
@@ -518,9 +549,8 @@ p9 <- df |>
 ggplot(mapping = aes(x = Percent_Add_Comp, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Percent Add Comp", y = "Total Compensation", title = "Percent Additional Compensation, Total Compensation for All Employees") +
+    labs(x = "Percent Additional Compensation", y = "Total Compensation", title = "Percent Additional Compensation, Total Compensation for All Employees") +
   geom_smooth(method = "lm") +
-  facet_wrap(~Sex) +
     theme(legend.position="none") + 
   theme(plot.title = element_text(size=10))
 p9
@@ -533,7 +563,7 @@ Again, in terms of these slope coefficients, longevity pay has the greatest scal
 Perhaps there are other things going on in that are affecting this (higher skill = higher pay?)
 
 
-## Topic 2 Gender
+## Topic 2: Gender
 
 Gender is one of the most cited inequalities anywhere, let alone the workplace.
 
@@ -768,7 +798,7 @@ It looks like males are consistently getting higher slopes than their counterpar
 
 
 
-## Topic 3 Management
+## Topic 3: Management
 
 The data provided was not too clear on the types of jobs each employee had.
 
@@ -785,7 +815,9 @@ where
 M4-Senior Manager (Not included in this particular data)
 
 M3-Middle Manager
+
 M2-Middle Manager
+
 M1-First Level Manager
 
 ### Management Data Data-Tidying
@@ -931,7 +963,7 @@ First, let's see how employees with management jobs compare to employees at larg
 
 Management_df |>
   group_by(Sex) |>
-summarize(mean = mean(Base_Salary)) |> gt()|>
+summarize(Mean = mean(Base_Salary)) |> gt()|>
   opt_row_striping() |> 
   opt_stylize(style = 4, color = "red")
 
@@ -943,7 +975,7 @@ summarize(mean = mean(Base_Salary)) |> gt()|>
 
 df |>
   group_by(Sex) |>
-summarize(mean = mean(Base_Salary)) |> gt()|>
+summarize(Mean = mean(Base_Salary)) |> gt()|>
   opt_row_striping() |> 
   opt_stylize(style = 4, color = "red")
 
@@ -1016,6 +1048,9 @@ arrange(desc(Total_Compensation)), 100) |> gt()|>
 
 Sorry for the scrolling, but in terms of the "glass-ceiling" — it seems like the top earners are males, with female compensation dropping off more quickly than male compensation
 
+It is also interesting to note that males had higher mean base salary and mean total compensation for both management and the overall dataset. 
+
+Further analysis can decipher what the other "Grade" job codes are to see if this trend continues
 
 
 
@@ -1031,21 +1066,44 @@ Was our data consistent among all departments? Are one or a few departments poss
 #| warning: FALSE
 
 
+
 p2 <- df |>
 ggplot(mapping = aes(x = Department, y = Total_Compensation)) +
   geom_point(aes(color = Sex, shape = Sex)) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Employees, by Department and Sex") +
-  theme(plot.title = element_text(size=10))
+    labs(x = "Department", y = "Total Compensation", title = "Total Compensatory for All Employees, by Department and Sex") +
+  theme(plot.title = element_text(size=10)) +
+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 p2
 
 
 ```
 
 It seems like M and F are pretty okay in terms of the spread.
-FRS and POL looks male dominated and HHS looksfemale dominated.
+FRS and POL looks male dominated and HHS looks female dominated.
+
+```{r}
+#| echo: FALSE
+#| warning: FALSE
+
+head(filter(df, Department == "HHS"), 1) |> ungroup(Employee) |> 
+  select(1:2) |> gt()|>
+  opt_row_striping() |> 
+  opt_stylize(style = 4, color = "red") 
+
+head(filter(df, Department == "FRS"), 1) |> ungroup(Employee) |> 
+  select(1:2) |> gt()|>
+  opt_row_striping() |> 
+  opt_stylize(style = 4, color = "red") 
+head(filter(df, Department == "POL"), 1) |> ungroup(Employee) |> 
+  select(1:2) |> gt()|>
+  opt_row_striping() |> 
+  opt_stylize(style = 4, color = "red") 
+
+```
 
 
+  
 #### Focus: Percent Base Salary & Additional Compensation
 ##### Base Salary
 ```{r}
@@ -1058,7 +1116,8 @@ p2 <- df |>
 ggplot(mapping = aes(x = Department, y = Total_Compensation)) +
   geom_point(aes(color = Percent_Base, size = Sex)) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Percent Base Salary vs. Total Compensatory for All Employees, by Department and Sex") + theme(plot.title = element_text(size= 10))
+    labs(x = "Base Salary", y = "Total Compensation", title = "Percent Base Salary vs. Total Compensatory for All Employees, by Department and Sex") + theme(plot.title = element_text(size= 10)) +
+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 p2
 
 ```
@@ -1075,14 +1134,16 @@ COR, FRS, and POL stick out as having higher total compensation, and this compen
 
 p2 <- df |>
 ggplot(mapping = aes(x = Department, y = Total_Compensation)) +
-  geom_point(aes(color = Percent_Add_Comp, size = Sex)) +
+  geom_point(aes(color = Sex, size = Percent_Add_Comp)) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Percentage Additional Compensation vs. Total Compensatory for All Employees, by Department and Sex") + theme(plot.title = element_text(size=9)) 
+    labs(x = "Base Salary", y = "Total Compensation", title = "Percentage Additional Compensation vs. Total Compensatory for All Employees, by Department and Sex") + theme(plot.title = element_text(size=9)) +
+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 p2
 
 
 ```
-That is, same as above, you can see COR, FRS, and POL start to have additional compensation right where they start to get above the rest.
+That is, same as above, you can see COR, FRS, and POL start to have total compensation right where they start to get less
+base pay as a percentage of their total pay.
 
 
 #### Focus: Combine them! (Gender & Percent Base Salary)
@@ -1097,7 +1158,8 @@ ggplot(mapping = aes(x = Department, y = Total_Compensation)) +
   geom_point(aes(color = Percent_Base, shape = Sex, size = Base_Salary)) +
   scale_size_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Percent Base Salary vs. Total Compensatory for All Employees, by Department and Sex") + theme(plot.title = element_text(size=10))
+    labs(x = "Base Salary", y = "Total Compensation", title = "Percent Base Salary vs. Total Compensatory for All Employees, by Department and Sex") + theme(plot.title = element_text(size=10)) +
+theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
   
 p2
 
@@ -1113,29 +1175,39 @@ Those three lines with lower percent bases and higher total comp are COR FRS and
 #| code-fold: TRUE
 #| code-summary: "Department Summary"
 #| warning: FALSE
-#| 
-#	Correction and Rehabilitation
-head(filter(df, Department == "COR"), 1) |>
-  select(1:2) |>gt()|>
+
+
+#	This was interesting code to write
+# filtered the entire df to show only COR entries, headed that data frame to one entry (row) 
+# ungrouped that entry by employee so I could just select columns department and department name
+# then make it into a table
+
+
+# COR 
+head(filter(df, Department == "COR"), 1) |> ungroup(Employee) |> 
+  select(1:2) |> gt()|>
   opt_row_striping() |> 
   opt_stylize(style = 4, color = "red")
 
-head(filter(df, Department == "FRS"), 1) |>
+#2 FRS
+head(filter(df, Department == "FRS"), 1) |> ungroup(Employee) |> 
   select(1:2)|> gt()|>
   opt_row_striping() |> 
   opt_stylize(style = 4, color = "red")
 
-head(filter(df, Department == "POL"), 1) |>
+# POL
+head(filter(df, Department == "POL"), 1) |> ungroup(Employee) |> 
   select(1:2) |> gt()|>
   opt_row_striping() |> 
   opt_stylize(style = 4, color = "red")
+
 ```
 
 
 Based on what the three departments are, as shown in the tables above, do you have any idea why they would stick out? 
 (I don't have an hypothesis, personally)
 
-## Conclusion
+## Some Conclusions
 
 We saw a lack of evidence for there being diminishing returns for getting additional compensation
 
