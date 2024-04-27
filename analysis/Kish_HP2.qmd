@@ -1,21 +1,22 @@
 ---
-title: "Kish_HP2"
+title: "Kish_HP2: Employee Salaries Analysis"
 author: "John Kish"
 format:
   html:
     embed-resources: true
 ---
 
-## IMPORT AND SETUP
+## Import and Setup
 ```{r setup}
 #| code-fold: TRUE
-#| #| code-summary: "Setup"
+#| code-summary: "Setup"
 #| warning: FALSE
 
+# loading libraries
 library(tidyverse)
 library(here)
 library(scales)
-
+library(gt)
 
 
 ```
@@ -26,9 +27,12 @@ library(scales)
 #| code-summary: "Import"
 #| warning: FALSE
 
+# locating
 here::i_am("analysis/Kish_HP2.qmd")
 library(here)
 
+# reading in data
+# df was used instead of a longer name for the sake of my sanity in typing
 df <- read.csv(here("data/Employee_Salaries.csv"))
 
 
@@ -36,12 +40,12 @@ df <- read.csv(here("data/Employee_Salaries.csv"))
 
 ```{r}
 #| code-fold: TRUE
-#| code-summary: "Data Interprtation"
+#| code-summary: "Explanation of Data Variables"
 #| warning: FALSE
 
 
 # Department
-# Abbreivation/accronym for the department name. Example: ABS for the Alcohol Beverage Services department
+# Abbreviation/acronym for the department name. Example: ABS for the Alcohol Beverage Services department
 
 # Department_Name
 # the department name for all active, permanent employees of Montgomery County, MD (Maryland)
@@ -71,7 +75,7 @@ df <- read.csv(here("data/Employee_Salaries.csv"))
 # Grade
 # the standing an employee has within a company. The internal codes for all positions are not provided, but we can safely look at M1, M2, M3, etc. as those are clearly levels of management. There are thousands of grades.
 
-# M4-Senior Manager
+# M4-Senior Manager (Not included in this particular data)
 # M3-Middle Manager
 # M2-Middle Manager
 # M1-First Level Manager
@@ -83,97 +87,269 @@ df <- read.csv(here("data/Employee_Salaries.csv"))
 
 
 
-## BACKGROUND
-
-employees of Montgomery County, MD paid in calendar year 2023
+## Case Study: Employees of Montgomery County, MD paid in calendar year 2023
 
 
+Workplace inequalities are a concern to many. We'll be examining that topic — with the example of reliable and public data from Montgomery County, MD.
+
+The employees in question are all active, permanent employees of Montgomery County, MD (Maryland).
+
+Each employee works in a department, where each department can have multiple divisions. 
+
+In addition to one's guaranteed base pay, an employee could earn overtime pay, longevity pay (when eligible for working at the company for a long time), both (additional compensation), either overtime or longevity pay, or neither.
+
+These forms of pay (specifically, base pay and additional pay) sum to an employee's total compensation.
+
+Additional detail can be found above in "Explanation of Data Variables" tab.
 
 
+<br>
 
-## PRELIMINARY ANALYSIS
-Total Compensation
-Additional Compensation
-no missing values
-using sex and not gender
+
+We will begin by exploring the relationship between base pay and total compensation across all employees.
+
+Then, we will look to see how this relationship develops across gender, management, and department.
+
+
+## Preliminary
+
+First, let's establish the data that we'll be looking at
 
 
 ```{r prepping data}
 #| code-summary: "Prepping the Data"
 #| warning: FALSE
+#| results: "hide"
 
+
+# Computing Total and Additional Compensation
 df$Total_Compensation <- df$Base_Salary + df$Overtime_Pay + df$Longevity_Pay
 df$Additional_Compensation <- df$Overtime_Pay + df$Longevity_Pay
 
+# Reading Gender as Sex
 df <- rename(df, Sex = "Gender")
-# str(df)
-# df <- df |> mutate(across(where(is.double), as.integer))
 
+# str(df)
+# checking the datatypes for each variable
+# df <- df |> mutate(across(where(is.double), as.integer))
+# Double deemed more useful, can change to integer if further analysis needs integer type
+
+# detecting NA Values
 sum(is.na(df))
-# No NA Values
+
 
 
 
 ```
+Additional compensation will be the combination of overtime and longevity pay.
+
+Total compensation will be the combination of base pay and additional compensation.
+
+In the data, there are `r sum(is.na(df))`  missing values. (Good news!)
+
+Assuming that since this data comes from the public and not the private sphere (and so the data would be collected based on public filings),
+M is assumed to be the legal sex of the individual — M for Male and F for Female. That is, sex as legality rather than gender as identity seems to be what is implied. Occasionally, the term "gender" might be used here as well to refer to "sex".
 
 
 
-How many employees are there? How many of them get overtime, longevity, either, or both?
 
-## Question 1 Total Compensation and Overtime
 
+## Topic 1 Total Compensation and Overtime
+### Preliminary Analysis
+
+#### How many employees are there? How many of them get overtime, longevity, either, or both?
 ```{r prep}
 #| code-fold: TRUE
 #| code-summary: "Preliminary Analysis"
 #| warning: FALSE
 
-#each row is a unique employee
+#each row is a unique employee, for each dataset
+
+
+# Total Count & cresting Employee number column
 Total_Employees <- nrow(df)
-Employees_Without_Base <- filter(df, Base_Salary == 0.00) |> nrow()
 df <- mutate(df, Employee = row_number())
 
+# Base Count & Percentage
+Employees_Without_Base <- filter(df, Base_Salary == 0.00) 
+Employees_With_Base <- anti_join(df, Employees_Without_Base)
+Percent_With_Base <- (nrow(Employees_With_Base) / Total_Employees) * 100
 
 
+
+# Over Count & Percentage
 Employees_Without_Overtime <- filter(df, Overtime_Pay == 0.00)
-#4,651 employees got no overtime
 Employees_With_Overtime <- anti_join(df, Employees_Without_Overtime)
-Percent_Overtime = (nrow(Employees_With_Overtime) / Total_Employees) * 100
-# 54% ish employees have overtime
+Percent_Overtime <- (nrow(Employees_With_Overtime) / Total_Employees) * 100
 
 
+# Long Count & Percentage
 Employees_Without_Longevity <- filter(df, Longevity_Pay == 0.00)
-#7,454 employees got no longevity pay
 Employees_With_Longevity <- anti_join(df, Employees_Without_Longevity)
-Percent_Longevity = (nrow(Employees_With_Longevity) / Total_Employees) * 100
-# 27% is of employees have longevity pay
+Percent_Longevity <- (nrow(Employees_With_Longevity) / Total_Employees) * 100
 
 
-
+# Either Over or Long Count % Percentage
 Employees_Without_Over_Long <- filter(df, Overtime_Pay == 0.00 | Longevity_Pay == 0.00)
-# 3491 employees have no overtime or longevity pay 
 Employees_With_Over_Long <- anti_join(df, Employees_Without_Over_Long)
 Percent_Over_Long <- (nrow(Employees_With_Over_Long) / Total_Employees) * 100
-# 66% percent of employees have overtime or longevity pay
 
-
+# Add Comp Count % Percentage
 Employees_Without_Add_Comp <- filter(df, Additional_Compensation == 0.00)
-# 3491 employees have no overtime or longevity pay 
 Employees_With_Add_Comp <- anti_join(df, Employees_Without_Add_Comp)
 Percent_Add_Comp <- (nrow(Employees_With_Add_Comp) / Total_Employees) * 100
-# 66% percent of employees have overtime or longevity pay
+
 
 
 ```
 
 
-There are `r Total_Employees` employees total, where `r Employees_Without_Base` employees have no base salary
+There are `r Total_Employees` employees total, where `r nrow(Employees_Without_Base)` employees have no base salary (`r Percent_With_Base |> round(1)`% have a base salary)
 
 Approximately `r Percent_Over_Long |> round(1)`% have overtime pay, `r Percent_Longevity |> round(1)`% have longevity pay, and
-`r Percent_Over_Long |> round(1)`% have one or the either.
+`r Percent_Over_Long |> round(1)`% have one or the either, and `r Percent_Add_Comp |> round(1)`% have both.
 
 
-How much of their total compensation is base + overtime, longevity, either, or both (In terms of percentage?)
 
+### Diminishing Returns?
+#### Plot Coefficients
+
+Is overtime pay worth it? Does it have diminishing returns? 
+If overtime pay (and other additional compensation) had diminishing returns, we would expect its slope to be less than 1.
+A slope of greater than 1 indicates that you get more and more total compensation for every bit more overtime and other additional pay you do.
+A higher slope indicates a greater degree of this scaling — which is desireable!
+
+
+```{r graph coefficients}
+#| code-fold: TRUE
+#| code-summary: "Preliminary Analysis Coefficients"
+#| warning: FALSE
+
+Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
+           data = filter(df))
+
+Over_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
+           data = filter(Employees_With_Overtime))
+
+Long_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
+           data = filter(Employees_With_Longevity))
+
+Over_Long_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
+           data = filter(Employees_With_Over_Long))
+
+Add_Comp_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
+           data = filter(Employees_With_Add_Comp))
+
+
+```
+
+
+Based on the coefficients for the graphs, those who only get base pay have their total compensation scale up the least
+with those having overtime and longevity pay scaling up the most.
+
+In particular, as is seen in the plots too, overtime pay scales slightly larger than longevity pay.
+
+So, there does seem to be a non-zero difference between the slope of taking on overtime (and getting more pay) + total compensation and the slope of 1 (overtime pay is directly correlational with total compensation)
+
+#### Plots
+
+```{r plot overview}
+#| code-fold: TRUE
+#| code-summary: "Preliminary Analysis Plots"
+#| warning: FALSE
+
+
+
+#overall
+p <- df |>
+ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
+  geom_point(aes(color = "red")) +
+  scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
+  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
+    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Employees") +
+  geom_smooth(method = "lm")
+p
+
+
+
+```
+The slope coefficient (intercept and then slope) is `r Base_Total_lm$coefficients`.
+
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Respective Percentage Total Compensation"
+#| warning: FALSE
+
+
+p2 <- Employees_With_Overtime |>
+ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
+  geom_point(aes(color = "red")) +
+  scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
+  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
+    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Those with Overtime Pay") +
+  geom_smooth(method = "lm")
+p2
+```
+
+The slope coefficient (intercept and then slope) is `r Over_Base_Total_lm$coefficients`.
+
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Respective Percentage Total Compensation"
+#| warning: FALSE
+
+
+p3 <- Employees_With_Longevity |>
+ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
+  geom_point(aes(color = "red")) +
+  scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
+  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
+    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Those with Longevity Pay") +
+  geom_smooth(method = "lm")
+p3
+```
+The slope coefficient (intercept and then slope) is `r Long_Base_Total_lm$coefficients`.
+
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Respective Percentage Total Compensation"
+#| warning: FALSE
+
+
+p4 <- Employees_With_Over_Long |>
+ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
+  geom_point(aes(color = "red")) +
+  scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
+  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
+    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Those with Overtime or longevity pay") +
+  geom_smooth(method = "lm")
+p4
+
+```
+
+The slope coefficient (intercept and then slope) is `r Over_Long_Base_Total_lm$coefficients`.
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Respective Percentage Total Compensation"
+#| warning: FALSE
+
+
+p5 <- Employees_With_Add_Comp |>
+ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
+  geom_point(aes(color = "red")) +
+  scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
+  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
+    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All those with additional compensation") +
+  geom_smooth(method = "lm")
+p5
+
+```
+The slope coefficient (intercept and then slope) is `r Add_Comp_Base_Total_lm$coefficients`.
+
+
+
+### Diminishing Returns? Revisted: Percentages
+#### How much of their total compensation is base + overtime, longevity, either, or both (In terms of percentage?)
 ```{r}
 #| code-fold: TRUE
 #| code-summary: "Respective Percentage Total Compensation"
@@ -205,114 +381,38 @@ df$Percent_Over_Long <- round(df$Percent_Over_Long, 3) * 100
 
 ```
 
+#### Coefficients of the percentage things
 
-How much of their total compensation is base + overtime, longevity, either, or both?
-
-
-
-```{r plot overview}
+```{r}
 #| code-fold: TRUE
 #| code-summary: "Preliminary Analysis Plots"
 #| warning: FALSE
 
 
 
-#overall
-p <- df |>
-ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
-  geom_point(aes(color = "red")) +
-  scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Employees") +
-  geom_smooth(method = "lm")
-p
-
-
-p2 <- Employees_With_Overtime |>
-ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
-  geom_point(aes(color = "red")) +
-  scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Those with Overtime Pay") +
-  geom_smooth(method = "lm")
-p2
-
-p3 <- Employees_With_Longevity |>
-ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
-  geom_point(aes(color = "red")) +
-  scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Those with Longevity Pay") +
-  geom_smooth(method = "lm")
-p3
-
-p4 <- Employees_With_Over_Long |>
-ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
-  geom_point(aes(color = "red")) +
-  scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Those with Overtime or longevity pay") +
-  geom_smooth(method = "lm")
-p4
-
-p5 <- Employees_With_Add_Comp |>
-ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
-  geom_point(aes(color = "red")) +
-  scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All those with additional compensation") +
-  geom_smooth(method = "lm")
-p5
-
-
-```
-
- 
-the coeff for these graphs
-
-
-```{r graph coefficients}
-#| code-fold: TRUE
-#| code-summary: "Preliminary Analysis Coefficients"
-#| warning: FALSE
-
-Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
+Percent_Base_Total_lm <- lm(Total_Compensation ~ Percent_Base, 
            data = filter(df))
 
-Over_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
-           data = filter(Employees_With_Overtime))
+Percent_Over_Total_lm <- lm(Total_Compensation ~ Percent_Over, 
+           data = filter(df))
 
-Long_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
-           data = filter(Employees_With_Longevity))
+Percent_Long_Total_lm <- lm(Total_Compensation ~ Percent_Long, 
+           data = filter(df))
 
-Over_Long_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
-           data = filter(Employees_With_Over_Long))
+Percent_Over_Long_Total_lm <- lm(Total_Compensation ~ Percent_Over_Long, 
+           data = filter(df))
 
-Add_Comp_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
-           data = filter(Employees_With_Add_Comp))
+Percent_Add_Comp_Total_lm <- lm(Total_Compensation ~ Percent_Add_Comp, 
+           data = filter(df))
 
 
-
-Base_Total_lm$coefficients
-Over_Base_Total_lm$coefficients
-Long_Base_Total_lm$coefficients
-Over_Long_Base_Total_lm$coefficients
-Add_Comp_Base_Total_lm$coefficients
 ```
 
 
-based on the coefficients for the graphs, those who only get base pay have their total compensation scale up the least
-with those choosing overtime and longevity pay scaling up the most.
+In terms of these slope coefficients, longevity pay has the greatest scaling.
+Interestingly, the more percentage base pay you have, the less your total compensation! (negative slope!)
 
-Overtime pay scales slightly larger than longevity pay.
-
-
-
-
-
-How much of their total compensation is base + overtime, longevity, either, or both (In terms of percentage?)
-
-
+#### Plots
 ```{r plots}
 #| code-fold: TRUE
 #| code-summary: "Preliminary Analysis Plots"
@@ -329,6 +429,39 @@ ggplot(mapping = aes(x = Percent_Base, y = Total_Compensation)) +
   geom_smooth(method = "lm")
 p6
 
+
+```
+
+The slope coefficient (intercept and then slope) is `r Percent_Base_Total_lm$coefficients`.
+
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Preliminary Analysis Plots"
+#| warning: FALSE
+
+
+p10 <- df |>
+  group_by(Employee) |>
+ggplot(mapping = aes(x = Percent_Over, y = Total_Compensation)) +
+  geom_point(aes(color = "red")) +
+  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
+    labs(x = "Percent Add Comp", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All those with additional compensation") +
+  geom_smooth(method = "lm") +
+  facet_wrap(~Sex)
+p10
+
+```
+
+The slope coefficient (intercept and then slope) is `r Percent_Over_Total_lm$coefficients`.
+
+
+
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Preliminary Analysis Plots"
+#| warning: FALSE
+
+
 p7 <- df |>
   group_by(Employee) |>
 ggplot(mapping = aes(x = Percent_Long, y = Total_Compensation)) +
@@ -337,6 +470,13 @@ ggplot(mapping = aes(x = Percent_Long, y = Total_Compensation)) +
     labs(x = "Percent Long", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All those with additional compensation") +
   geom_smooth(method = "lm")
 p7
+```
+The slope coefficient (intercept and then slope) is `r Percent_Long_Total_lm$coefficients`.
+
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Preliminary Analysis Plots"
+#| warning: FALSE
 
 p8 <- df |>
   group_by(Employee) |>
@@ -346,6 +486,13 @@ ggplot(mapping = aes(x = Percent_Over_Long, y = Total_Compensation)) +
     labs(x = "Percent Over Long", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All those with additional compensation") +
   geom_smooth(method = "lm")
 p8
+```
+
+The slope coefficient (intercept and then slope) is `r Percent_Over_Long_Total_lm$coefficients`.
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Preliminary Analysis Plots"
+#| warning: FALSE
 
 p9 <- df |>
   group_by(Employee) |>
@@ -353,62 +500,141 @@ ggplot(mapping = aes(x = Percent_Add_Comp, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
     labs(x = "Percent Add Comp", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All those with additional compensation") +
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm") +
+  facet_wrap(~Sex)
 p9
 
 ```
 
+The slope coefficient (intercept and then slope) is `r Percent_Add_Comp_Total_lm$coefficients`.
 
-the coefficients of the percentage things
+Again, in terms of these slope coefficients, longevity pay has the greatest scaling.
+Perhaps there are other things going on in that are affecting this (higher skill = higher pay?)
+
+
+## Topic 2 Gender
+
+Gender is one of the most cited inequalities anywhere, let alone the workplace.
+
+We will be going through our previous analysis, but this time separate Male and Female to see if their scalings differ.
+
+The sex with the higher (positive) scaling benefits more from overtime, longevity pay, etc. 
+
+This is a simplified analysis that does not control for how much (if at all) each sex accepts these additional forms of compensation (e.g. overtime) — it is at a higher level. That is, it is looking at the resulting inequalities between males and females regardless of how those inequalities came to be.
+
+
+### Source of Income Coefficients, by Gender
+
 
 ```{r}
 #| code-fold: TRUE
-#| code-summary: "Preliminary Analysis Plots"
+#| code-summary: "Data Coefficients, by Gender"
 #| warning: FALSE
 
+# Base effect on total compensation, by sex
+M_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
+           data = filter(df, Sex =="M"))
+F_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
+           data = filter(df, Sex == "F"))
+
+# Over
+M_Over_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
+           data = filter(Employees_With_Overtime, Sex =="M"))
+F_Over_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
+           data = filter(Employees_With_Overtime, Sex == "F"))
+
+# Long
+M_Long_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
+           data = filter(Employees_With_Longevity, Sex =="M"))
+F_Long_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
+           data = filter(Employees_With_Longevity, Sex == "F"))
+
+# Over Long
+M_Over_Long_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
+           data = filter(Employees_With_Over_Long, Sex =="M"))
+F_Over_Long_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
+           data = filter(Employees_With_Over_Long, Sex == "F"))
 
 
-coef(lm(Total_Compensation ~ Percent_Base, 
-           data = filter(df)))
 
+#Add Comp
+M_Add_Comp_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
+           data = filter(Employees_With_Add_Comp, Sex =="M"))
+F_Add_Comp_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
+           data = filter(Employees_With_Add_Comp, Sex == "F"))
 
-
-coef(lm(Total_Compensation ~ Percent_Long, 
-           data = filter(df)))
-
-
-
-
-coef(lm(Total_Compensation ~ Percent_Over_Long, 
-           data = filter(df)))
-
-
-
-coef(lm(Total_Compensation ~ Percent_Add_Comp, 
-           data = filter(df)))
 
 
 ```
 
-In terms of these slope coefficients, longevity pay has the greatest scaling.
-
-Interestingly, the more percentage base pay you have, the less your total compensation
 
 
+### Percentage Source of Income Coefficients, by Gender
+
+NOTE: ignored in analysis, deemed insignificant to the question of gender
+
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Data Percent Coefficients, by Gender"
+#| warning: FALSE
+
+
+# Percent Base
+Gender_Percentage_M_lm <- lm(Total_Compensation ~ Percent_Base, 
+           data = filter(df,Sex =="M"))
+
+Gender_Percentage_F_lm <- lm(Total_Compensation ~ Percent_Base, 
+           data = filter(df, Sex =="F"))
+
+
+# Percent Over
+Gender_Percentage_Over_M_lm <- lm(Total_Compensation ~ Percent_Over, 
+           data = filter(df, Sex =="M"))
+
+Gender_Percentage_Over_F_lm <- lm(Total_Compensation ~ Percent_Over, 
+           data = filter(df, Sex =="F"))
+
+
+
+# Percent Long
+Gender_Percentage_Long_M_lm <- lm(Total_Compensation ~ Percent_Long, 
+           data = filter(df, Sex =="M"))
+
+Gender_Percentage_Long_F_lm <- lm(Total_Compensation ~ Percent_Long, 
+           data = filter(df, Sex =="F"))
+
+
+# Percent Over Long
+Gender_Percentage_Over_Long_M_lm <- lm(Total_Compensation ~ Percent_Over_Long, 
+           data = filter(df, Sex =="M"))
+
+Gender_Percentage_Over_Long_F_lm <- lm(Total_Compensation ~ Percent_Over_Long, 
+           data = filter(df, Sex =="F"))
+
+
+# Percent Add Comp
+Gender_Percentage_Add_Comp_M_lm <- lm(Total_Compensation ~ Percent_Add_Comp, 
+           data = filter(df, Sex =="M"))
+
+Gender_Percentage_Add_Comp_F_lm <- lm(Total_Compensation ~ Percent_Add_Comp, 
+           data = filter(df, Sex =="F"))
+
+
+```
 
 
 
 
-## Question 2 Gender
-
+### Gender Analysis Plots
+#### Source of Income, by Gender
 ```{r plot overview gender}
 #| code-fold: TRUE
-#| code-summary: "Import"
+#| code-summary: "Gender Plot 1"
 #| warning: FALSE
 
 
 #overall
-p <- df |>
+p1 <- df |>
 ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
   scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
@@ -416,8 +642,17 @@ ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
     labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Employees") +
   geom_smooth(method = "lm") +
   facet_wrap(~Sex)
-p
+p1
 
+```
+The slope coefficient (intercept and then slope) for males is `r M_Base_Total_lm$coefficients`
+and for females it is `r F_Base_Total_lm$coefficients`.
+
+
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Gender Plot 2"
+#| warning: FALSE
 
 p2 <- Employees_With_Overtime |>
 ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
@@ -428,6 +663,15 @@ ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   geom_smooth(method = "lm") +
   facet_wrap(~Sex)
 p2
+```
+
+The slope coefficient (intercept and then slope) for males is `r M_Over_Base_Total_lm$coefficients`
+and for females it is`r F_Over_Base_Total_lm$coefficients`.
+
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Gender Plot 3"
+#| warning: FALSE
 
 p3 <- Employees_With_Longevity |>
 ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
@@ -438,6 +682,17 @@ ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   geom_smooth(method = "lm") +
   facet_wrap(~Sex)
 p3
+```
+
+
+The slope coefficient (intercept and then slope) for males is `r M_Long_Base_Total_lm$coefficients`
+and for females it is `r F_Long_Base_Total_lm$coefficients`.
+
+
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Gender Plot 4"
+#| warning: FALSE
 
 p4 <- Employees_With_Over_Long |>
 ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
@@ -449,6 +704,16 @@ ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   facet_wrap(~Sex)
 p4
 
+```
+
+The slope coefficient (intercept and then slope) for males is `r M_Over_Long_Base_Total_lm$coefficients`
+and for females it is `r F_Over_Long_Base_Total_lm$coefficients`.
+
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Gender Plot 5"
+#| warning: FALSE
+
 p5 <- Employees_With_Add_Comp |>
 ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
@@ -459,118 +724,106 @@ ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   facet_wrap(~Sex)
 p5
 
-
-
-```
-
-the coeff for the data, on gender
-
-```{r}
-#| code-fold: TRUE
-#| code-summary: "Import"
-#| warning: FALSE
-
-
-M_Add_Comp_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
-           data = filter(Employees_With_Add_Comp, Sex =="M"))
-F_Add_Comp_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
-           data = filter(Employees_With_Add_Comp, Sex == "F"))
-M_Over_Long_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
-           data = filter(Employees_With_Over_Long, Sex =="M"))
-F_Over_Long_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
-           data = filter(Employees_With_Over_Long, Sex == "F"))
-M_Long_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
-           data = filter(Employees_With_Longevity, Sex =="M"))
-F_Long_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
-           data = filter(Employees_With_Longevity, Sex == "F"))
-M_Over_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
-           data = filter(Employees_With_Overtime, Sex =="M"))
-F_Over_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
-           data = filter(Employees_With_Overtime, Sex == "F"))
-M_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
-           data = filter(df, Sex =="M"))
-F_Base_Total_lm <- lm(Total_Compensation ~ Base_Salary, 
-           data = filter(df, Sex == "F"))
-
-
 ```
 
 
 
-the coefficients of the percentage things, on gender
+The slope coefficient (intercept and then slope) for males is `r M_Add_Comp_Base_Total_lm$coefficients`
+and for females it is `r F_Add_Comp_Base_Total_lm$coefficients`.
+
+<br>
+
+It looks like males are consistently getting higher slopes than their counterparts.
+
+
 ```{r}
-#| code-fold: TRUE
-#| code-summary: "Import"
-#| warning: FALSE
 
-# Male Add Comp
-coef(lm(Total_Compensation ~ Percent_Add_Comp, 
-           data = filter(df, , Sex =="M")))
-# Female Add Comp
-coef(lm(Total_Compensation ~ Percent_Add_Comp, 
-           data = filter(df, , Sex =="F")))
+p6 <- df |>
+  group_by(Employee) |>
+ggplot(mapping = aes(x = Percent_Base, y = Total_Compensation)) +
+  geom_point(aes(color = "red")) +
+  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
+    labs(x = "Percent Base", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All those with additional compensation") +
+  geom_smooth(method = "lm")
+p6
 
-coef(lm(Total_Compensation ~ Percent_Over_Long, 
-           data = filter(df, , Sex =="M")))
-coef(lm(Total_Compensation ~ Percent_Over_Long, 
-           data = filter(df, , Sex =="F")))
-
-coef(lm(Total_Compensation ~ Percent_Base, 
-           data = filter(df, , Sex =="M")))
-coef(lm(Total_Compensation ~ Percent_Base, 
-           data = filter(df, , Sex =="F")))
-
-coef(lm(Total_Compensation ~ Percent_Long, 
-           data = filter(df, , Sex =="M")))
-coef(lm(Total_Compensation ~ Percent_Long, 
-           data = filter(df, , Sex =="F")))
 ```
 
 
+## Topic 3 Management
 
+The data provided was not too clear on the types of jobs each employee had. However, I was able to pick out those jobs dealing with management.
+Do these jobs follow the trends we saw earlier? Both in terms of additional compensation scaling and men benefiting from this more?
+Due to limitations in the data (the spread of the managerial data does not allow for proper slope analysis) we will be relying on visuals and summaries.
 
+Management was broken down into categories:
+where 
+M4-Senior Manager (Not included in this particular data)
 
+M3-Middle Manager
+M2-Middle Manager
+M1-First Level Manager
 
-## Question 3 Management
-
+### Management Data Data-Tidying
 ```{r}
 #| code-fold: TRUE
-#| code-summary: "Management Data"
+#| code-summary: "Management Data Tidying"
 #| warning: FALSE
-#| 
+
+#filter
 Management_1 <- filter(df, Grade == "M1")
 Management_2 <- filter(df, Grade == "M2")
 Management_3 <- filter(df, Grade == "M3")
 
+#combine 
 Management_df <- bind_rows(Management_1, Management_2, Management_3)
-
-
-
-
-
-Management_df |> filter(Sex =="M") |> nrow()
-Management_df |> filter(Sex =="F") |> nrow()
-
-
-
-Management_df |> filter(Grade == "M1") |> filter(Sex =="M") |> nrow()
-Management_df |> filter(Grade == "M2") |> filter(Sex =="M") |> nrow()
-Management_df |> filter(Grade == "M2") |> filter(Sex =="M") |> nrow()
-
-Management_df |> filter(Grade == "M1") |> filter(Sex =="F") |> nrow()
-Management_df |> filter(Grade == "M2") |> filter(Sex =="F") |> nrow()
-Management_df |> filter(Grade == "M2") |> filter(Sex =="F") |> nrow()
-
-
 
 ```
 
+### Is Management Data similar to The original? Are Male and Female equally represented?
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Management Data Comparability"
+#| warning: FALSE
+
+# all
+Row_Management_df <- Management_df |> nrow()
+
+# M F distinction
+Row_M_Management_df <- Management_df |> filter(Sex =="M") |> nrow()
+Row_F_Management_df <- Management_df |> filter(Sex =="F") |> nrow() 
+
+# Male Managerial distinction
+Row_M_M1_Management_df <-  Management_df |> filter(Grade == "M1") |> filter(Sex =="M") |> nrow()
+Row_M_M2_Management_df <- Management_df |> filter(Grade == "M2") |> filter(Sex =="M") |> nrow()
+Row_M_M3_Management_df <- Management_df |> filter(Grade == "M2") |> filter(Sex =="M") |> nrow()
+
+# Female Managerial distinction
+Row_F_M1_Management_df <- Management_df |> filter(Grade == "M1") |> filter(Sex =="F") |> nrow()
+Row_F_M2_Management_df <- Management_df |> filter(Grade == "M2") |> filter(Sex =="F") |> nrow()
+Row_F_M3_Management_df <- Management_df |> filter(Grade == "M2") |> filter(Sex =="F") |> nrow()
+
+```
+
+There are `r Row_Management_df` employees in management. `r Row_M_Management_df` of those are male and `r Row_F_Management_df` of those are female.
+
+Between the management levels, males and females seem to be equally represented.
+
+In M1, there are `r Row_M_M1_Management_df` males and `r Row_F_M1_Management_df` females.
+
+In M2, there are `r Row_M_M2_Management_df` males and `r Row_F_M2_Management_df` females.
+
+In M3, there are `r Row_M_M3_Management_df` males and `r Row_F_M3_Management_df` females.
+
+
+### Management Plots
 
 ```{r}
 #| code-fold: TRUE
 #| code-summary: "Management Plots"
 #| warning: FALSE
-#| 
+
+
 p <- Management_df |>
 ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   geom_point(aes(color = "red")) +
@@ -580,6 +833,37 @@ ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   geom_smooth(method = "lm") +
   facet_wrap(~ Grade)
 p
+
+```
+
+The slopes look pretty similar...
+
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Management Plots"
+#| warning: FALSE
+
+
+p <- Management_df |>
+ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
+  geom_point(aes(color = "red")) +
+  scale_x_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
+  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
+    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Employees") +
+  geom_smooth(method = "lm") +
+  facet_wrap(~ Sex)
+p
+
+
+
+```
+
+The slopes look pretty even across the sexes too, what if we combined them?
+
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Management Plots"
+#| warning: FALSE
 
 p2 <- Management_df |>
 ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
@@ -591,50 +875,128 @@ ggplot(mapping = aes(x = Base_Salary, y = Total_Compensation)) +
   facet_grid(rows = vars(Grade), cols = vars(Sex))
 p2
 
-
 ```
+
+Yeah, the slopes look pretty similar across the charts!
+Remember, there is not a lot of management specific data, so some lines might appear to have more or less extension than they otherwise would.
+
+
+
+
+### Management Summary
+
+Let's look at the the management data to see some specific numbers that wouldn't show up in a graph
+
+#### Comparability
+
+First, let's see how employees with management jobs compare to employees at large — to see if we picked an okay sample.
 
 
 ```{r}
 #| code-fold: TRUE
-#| code-summary: "Management Summary"
+#| code-summary: "Mean Base Salary Management"
 #| warning: FALSE
-#| 
+
 Management_df |>
   group_by(Sex) |>
-summarize(mean = mean(Base_Salary))
-Management_df |>
-  group_by(Sex) |>
-summarize(mean = mean(Total_Compensation))
+summarize(mean = mean(Base_Salary)) |> gt()|>
+  opt_row_striping() |> 
+  opt_stylize(style = 4, color = "red")
+
+```
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Mean Base Salary All"
+#| warning: FALSE
 
 df |>
   group_by(Sex) |>
-summarize(mean = mean(Base_Salary))
+summarize(mean = mean(Base_Salary)) |> gt()|>
+  opt_row_striping() |> 
+  opt_stylize(style = 4, color = "red")
+
+```
+
+Well, to maybe not too much suprise, the mean base salaries for management are much higher than average.
+
+
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Mean Total Compensation Management"
+#| warning: FALSE
+
+Management_df |>
+  group_by(Sex) |>
+summarize(mean = mean(Total_Compensation)) |> gt()|>
+  opt_row_striping() |> 
+  opt_stylize(style = 4, color = "red")
+
+```
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Mean Total Compensation All"
+#| warning: FALSE
+
 df |>
   group_by(Sex) |>
-summarize(mean = mean(Total_Compensation))
-
-
-
-Management_df |>
-filter(Sex == "M") |>
-summarize(Total_Compensation)
-
-
-Management_df |>
-filter(Sex == "F") |>
-summarize(Total_Compensation)
+summarize(mean = mean(Total_Compensation)) |> gt()|>
+  opt_row_striping() |> 
+  opt_stylize(style = 4, color = "red")
 
 
 ```
 
+Interestingly too, the mean total compensation salaries for management are much higher than average. Also, it is important to note here that there is little additional compensation above base salary for management, so perhaps this wasn't the most ideal choice!
 
-
-
-## Question 4: Department
+##### Comparability: Sex
 
 ```{r}
+#| code-fold: TRUE
+#| code-summary: "Mean Total Compensation Management Male"
+#| warning: FALSE
 
+
+head(Management_df |>
+filter(Sex == "M") |> 
+summarize(Total_Compensation) |> 
+arrange(desc(Total_Compensation)), 100) |> gt()|>
+  opt_row_striping() |> 
+  opt_stylize(style = 4, color = "red")
+
+
+```
+
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Mean Total Compensation Management Female"
+#| warning: FALSE
+
+
+head(Management_df |>
+filter(Sex == "F") |> 
+summarize(Total_Compensation) |> 
+arrange(desc(Total_Compensation)), 100) |> gt()|>
+  opt_row_striping() |> 
+  opt_stylize(style = 4, color = "red")
+
+
+```
+
+Sorry for the scrolling, but in terms of the "glass-ceiling" — it seems like the top earners are males, with female compensation dropping off more quickly than male compensation
+
+
+
+
+## Topic 4: Department
+
+Was our data consistent among all departments? Are one or a few departments possible skewing the data (and the above discussed scaling?)
+
+### Department Plots
+#### Focus: Sex
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Management Summary"
+#| warning: FALSE
 
 
 p2 <- df |>
@@ -645,7 +1007,56 @@ ggplot(mapping = aes(x = Department, y = Total_Compensation)) +
 p2
 
 
+```
 
+It seems like M and F are pretty okay in terms of the spread.
+FRS and POL looks male dominated and HHS looksfemale dominated.
+
+
+#### Focus: Percent Base Salary & Additional Compensation
+##### Base Salary
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Management Summary"
+#| warning: FALSE
+
+
+p2 <- df |>
+ggplot(mapping = aes(x = Department, y = Total_Compensation)) +
+  geom_point(aes(color = Percent_Base, size = Sex)) +
+  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
+    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Employees") 
+p2
+
+```
+
+COR, FRS, and POL stick out as having higher total compensation, and this compensation (shown in dark blue) becomes higher at the point where it no longer is because of their base salary as much.
+
+
+##### Additional Compensation
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Management Summary"
+#| warning: FALSE
+
+
+p2 <- df |>
+ggplot(mapping = aes(x = Department, y = Total_Compensation)) +
+  geom_point(aes(color = Percent_Add_Comp, size = Sex)) +
+  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
+    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Employees") 
+p2
+
+
+```
+That is, same as above, you can see COR, FRS, and POL start to have additional compensation right where they start to get above the rest.
+
+
+#### Focus: Combine them! (Gender & Percent Base Salary)
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Management Summary"
+#| warning: FALSE
 
 
 p2 <- df |>
@@ -656,29 +1067,46 @@ ggplot(mapping = aes(x = Department, y = Total_Compensation)) +
 p2
 
 
-p2 <- df |>
-ggplot(mapping = aes(x = Department, y = Total_Compensation)) +
-  geom_point(aes(color = Percent_Base, size = Sex)) +
-  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Employees") 
-p2
-
-
-
-
-p2 <- df |>
-ggplot(mapping = aes(x = Department, y = Total_Compensation)) +
-  geom_point(aes(color = Percent_Over, size = Sex)) +
-  scale_y_continuous(labels = label_number(suffix = " K", scale = 1e-3)) +
-    labs(x = "Base Salary", y = "Total Compensation", title = "Base Salary vs. Total Compensatory for All Employees") 
-p2
-
-
-
-
 ```
 
 
-Those three lines with lower percent bases and higher total comp are COR FRS and POL
+Here's an intersting visual showing the same information as the two previous — but here again we still se COR, FRS, and POL sticking out.
 
+
+Those three lines with lower percent bases and higher total comp are COR FRS and POL.
+```{r}
+#| code-fold: TRUE
+#| code-summary: "Management Summary"
+#| warning: FALSE
+#| 
+#	Correction and Rehabilitation
+head(filter(df, Department == "COR"), 1) |>
+  select(1:2) |>gt()|>
+  opt_row_striping() |> 
+  opt_stylize(style = 4, color = "red")
+
+head(filter(df, Department == "FRS"), 1) |>
+  select(1:2)|> gt()|>
+  opt_row_striping() |> 
+  opt_stylize(style = 4, color = "red")
+
+head(filter(df, Department == "POL"), 1) |>
+  select(1:2) |> gt()|>
+  opt_row_striping() |> 
+  opt_stylize(style = 4, color = "red")
+```
+
+
+Based on what the three departments are, as shown in the tables above, do you have any idea why they would stick out? 
+(I don't have an hypothesis, personally)
+
+## Conclusion
+
+We saw evidence that there is a lack of diminishing returns for getting additional compensation
+
+Moreover, males tend to experience less diminishing returns than their counterparts.
+
+The gender of participants seems to be pretty consistent across all departments, and three departments stick out for how they compensate their employees.
+
+Management is not too much like the entire data in terms of mean base salary and mean total compensation, but the slopes of the lines do not look too radical
 
